@@ -475,4 +475,6 @@ getInfo()部分的代码如下：
 可以绘制出人体的五官，同理可以使用posenet中的adjacentKeyPoints获得一组相关的点，使用canvas画线，可以将人体线条绘制出来；也可以使用getBoundingBox将人体边框绘制出来。
 ### 七、 画外音
 至此我对于posenet模型的理解告一段落，可以看到程序很冗长，使用了大量的if和switch语句，之后会进行进一步的改进。在绘制人体骨架时，会存在绘制出的点偏离正确位置的情况，可以通过改动绘制时点的位置进行调整。<br>
+需要注意的是，由于tfjs库版本的原因，目前这个插件无法与knn插件一起使用，该问题还在解决中。<br>
 大家若有兴趣，除了posenet模型，还有knn（图片分类）代码：https://github.com/CodeLabClub/scratch3_knn 开发过程：https://github.com/doNotBeTooSerious/scratch_knn_install 以及faceapi(人脸识别)模型可以参考https://github.com/doNotBeTooSerious/scratch_faceapi_install。<br>
+不断更新中..
