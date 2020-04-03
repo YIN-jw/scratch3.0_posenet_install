@@ -179,7 +179,7 @@ blocks: [
 ```
 5.3、 在cmder中运行webpack-dev-server --https，打开:https://127.0.0.1:8601/ 。点击isloaded积木块显示true，则代表模型成功加载。
 ### 六、posenet功能执行代码
-注：模型功能的引用也参考官方的说明。个人的理解是模型输出为一个数组，其中包含人体的置信度、人体各个部位的名称及位置以及人体各个部位的置信度。<br>
+注：模型功能的引用也参考官方的说明。个人的理解是模型输出为一个数组，其中包含人体的置信度、人体各个部位的名称及位置以及人体各个部位的置信度。<br>人体的置信度是pose.score，人体各个部位的信息pose.keypoints，人体各个部位的置信度pose.keypoints[i].score，人体各个部位的名称pose.keypoints[i].part。
 6.1、 首先将VideoToggle(args){ }部分做如下修改：
 ```
     videoToggle(args) {
@@ -209,7 +209,7 @@ blocks: [
     }
 ```
 即在this.runtime.ioDevices.video.enableVideo()添加then(() => { // 获得video数据 this.video = this.runtime.ioDevices.video.provider.video console.log('this.video got') }); 部分，获得video数据。方便下一步的调用和处理。<br>
-6.2、 在isloaded()函数后添加poseConfidence()：
+6.2、 人体置信度<br>在isloaded()函数后添加poseConfidence()：
 ```
 	poseConfidence(args,util) {
 		if (this.globalVideoState === VideoState.OFF){
@@ -337,3 +337,142 @@ getInfo()部分的代码如下：
 		})
 	}
 ```
+此时调用积木块即可得到多人的人体置信度，上面的代码最多只能进行五个人的识别，可以根据需要进行添加。<br>
+6.3、 人体各部位置信度<br>
+```
+	posePartConfidence(args,util) {
+		if (this.globalVideoState === VideoState.OFF) {
+            alert('请先打开摄像头')
+            return
+        }
+		return new Promise((resolve, reject) => {
+            this.timer = setInterval(async () => {
+				const imageScaleFactor = 0.50;
+				const flipHorizontal = false;
+				const outputStride = 16;
+				this.video.width=500;
+				this.video.height=500;
+				const imageElement = this.video;
+				const net = this.posenet;
+				const pose = await net.estimateSinglePose(imageElement, imageScaleFactor, flipHorizontal, outputStride);
+				let x = args.POSES;
+				switch (x) {
+					case POSES.NOSE:
+					resolve(pose.keypoints[0].score);
+					break;
+					case POSES.LEFTEYE:
+					resolve(pose.keypoints[1].score);
+					break;
+					case POSES.RIGHTEYE:
+					resolve(pose.keypoints[2].score);
+					break;
+					case POSES.LEFTEAR:
+					resolve(pose.keypoints[3].score);
+					break;
+					case POSES.RIGHTEAR:
+					resolve(pose.keypoints[4].score);
+					break;
+					case POSES.LEFTSHOULDER:
+					resolve(pose.keypoints[5].score);
+					break;
+					case POSES.RIGHTSHOULDER:
+					resolve(pose.keypoints[6].score);
+					break;
+					case POSES.LEFTELBOW:
+					resolve(pose.keypoints[7].score);
+					break;
+					case POSES.RIGHTELBOW:
+					resolve(pose.keypoints[8].score);
+					break;
+					case POSES.LEFTWRIST:
+					resolve(pose.keypoints[9].score);
+					break;
+					case POSES.RIGHTWRIST:
+					resolve(pose.keypoints[10].score);
+					break;
+					case POSES.LEFTHIP:
+					resolve(pose.keypoints[11].score);
+					break;
+					case POSES.RIGHTHIP:
+					resolve(pose.keypoints[12].score);
+					break;
+					case POSES.LEFTKNEE:
+					resolve(pose.keypoints[13].score);
+					break;
+					case POSES.RIGHTKNEE:
+					resolve(pose.keypoints[14].score);
+					break;
+					case POSES.LEFTANKLE:
+					resolve(pose.keypoints[15].score);
+					break;
+					case POSES.RIGHTANKLE:
+					resolve(pose.keypoints[16].score);
+					break;
+				}
+            }, 1000);
+        })
+	}
+```
+调用该积木块可以获得单个人人体各部位的置信度，多个人的代码较长，就不浪费资源了，思路同多人置信度类似。<br>
+6.4、 人体各部位位置<br>
+得到人体各部位位置的程序和人体各部位置信度的思路类似，使用pose.keypoints[i].position可以获得，再使用switch以及if语句实现选择。  <br>
+6.5、 绘制骨架<br>
+绘制骨架中就需要用到在videoToggle(args){}函数中得到的canvas。代码如下：
+```
+	drawPoint(args,util){
+		if (this.globalVideoState === VideoState.OFF) {
+			alert('请先打开摄像头')
+			return
+		}
+		return new Promise((resolve, reject) => {
+			//
+			const originCanvas = this.originCanvas 
+			const canvas = this.canvas_one
+			
+			canvas.width = 480
+			canvas.height = 360
+			// 将绘制的canvas覆盖于原canvas之上
+			originCanvas.parentElement.style.position = 'relative'
+			canvas.style.position = 'absolute'
+			canvas.style.top = '0'
+			canvas.style.left = '0'
+			console.log(canvas)
+			originCanvas.parentElement.append(canvas)
+			//console.log(canvas)
+            this.timer = setInterval(async () => {
+				const imageScaleFactor = 0.50;
+				const flipHorizontal = false;
+				const outputStride = 16;
+				const maxPoseDetections = 5;//     get up to 5 poses
+				const scoreThreshold = 0.5;//    minimum confidence of the root part of a pose
+				const nmsRadius = 20;//   minimum distance in pixels between the root parts of poses
+				this.video.width=500;
+				this.video.height=500;
+				const imageElement = this.video;
+				const net = this.posenet;
+				const poses = await net.estimateMultiplePoses(imageElement, imageScaleFactor, flipHorizontal, outputStride,maxPoseDetections,scoreThreshold,nmsRadius);
+				canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+				for (j in poses) {
+				    if (poses[j].score >= 0.2) {//poses会对这个人的置信度进行打分，当打分大于某个值时，就进行姿态的绘制
+					    for (i in poses[j].keypoints) {
+						    const points = poses[j].keypoints[i]
+						    if (points.score >= 0.1) {//当这个人的这个部位置信度大于某个值，就在画布上表示出这个部位
+							    const {y,x} = points.position
+							    //开始进行画点
+							    canvas.getContext('2d').beginPath()// canvas起始
+							    canvas.getContext('2d').arc(x * 0.8, y * 0.6, 3, 0, 2 * Math.PI)//arc画圆，x，y为中心，r为半径，最后为起始角和终止角
+							    canvas.getContext('2d').fillStyle = "#FF0000"
+							    canvas.getContext('2d').fill()
+						    }
+					    }
+				    }
+				}
+            }, 1000);
+        })
+		
+	}
+```
+可以绘制出人体的五官，同理可以使用posenet中的adjacentKeyPoints获得一组相关的点，使用canvas画线，可以将人体线条绘制出来；也可以使用getBoundingBox将人体边框绘制出来。
+### 七、 画外音
+至此我对于posenet模型的理解告一段落，可以看到程序很冗长，使用了大量的if和switch语句，之后会进行进一步的改进。在绘制人体骨架时，会存在绘制出的点偏离正确位置的情况，可以通过改动绘制时点的位置进行调整。<br>
+大家若有兴趣，除了posenet模型，还有knn（图片分类）代码：https://github.com/CodeLabClub/scratch3_knn 开发过程：https://github.com/doNotBeTooSerious/scratch_knn_install 以及faceapi(人脸识别)模型可以参考https://github.com/doNotBeTooSerious/scratch_faceapi_install。<br>
