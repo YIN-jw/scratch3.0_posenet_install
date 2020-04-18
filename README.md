@@ -4,7 +4,7 @@
 Scratch3.0的下载请参考官方，目前使用到的是scratch-gui和scratch-vm包。scratch-gui: https://github.com/LLK/scratch-gui.git ,scratch-vm:https://github.com/LLK/scratch-vm.git 。同时需要cmder输入指令，用到node和yarn安装依赖，请自行下载。在Scratch3.0中扩展插件的详细过程请参考：https://blog.just4fun.site/post/少儿编程/create-first-scratch3-extension/ 。
 ### 二、在Scratch3.0 GUI搭建插件
 2.1、 首先在scratch-vm\src\extensions目录下新建scratch3_posenet文件夹。在scratch3_posenet文件夹中放置空白文件index.js。<br>
-2.2、 设置extensions-manager.js文件，该文件夹位于scratch-vm\src\extensions-support文件夹下。修改方式如下：+所指部分为调价的代码：<br>
+2.2、 设置extensions-manager.js文件，该文件夹位于scratch-vm\src\extensions-support文件夹下。修改方式如下：+所指部分为添加的代码：<br>
 ```const dispatch = require('../dispatch/central-dispatch');
 const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
