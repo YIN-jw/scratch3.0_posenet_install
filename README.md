@@ -479,4 +479,4 @@ getInfo()部分的代码如下：
 大家若有兴趣，除了posenet模型，还有knn（图片分类）代码：https://github.com/CodeLabClub/scratch3_knn 开发过程：https://github.com/doNotBeTooSerious/scratch_knn_install 以及faceapi(人脸识别)模型可以参考https://github.com/doNotBeTooSerious/scratch_faceapi_install。<br>
 不断更新中..
 ### 八、更新功能<br>
-按照官方的说明可以知道imageElement参数可以为很多类型，从而可以加载本地图片，通过canvas先绘制出本地图片，再对画布上图片中的人物进行姿态绘制。参考官方demo:https://github.com/tensorflow/tfjs-models/tree/master/posenet/demos .
+按照官方的说明可以知道imageElement参数可以为很多类型，从而可以加载本地图片，通过canvas先绘制出本地图片，再对画布上图片中的人物进行姿态绘制。参考官方demo:https://github.com/tensorflow/tfjs-models/tree/master/posenet/demos .需要注意图片的像素大小，官方使用的图片是513x513，如果图片大小相差较大，绘制效果会比较差。
